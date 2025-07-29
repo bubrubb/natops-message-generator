@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NATOPS Interim Change Message Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        .section h3 {
+            color: #34495e;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        input[type="text"], input[type="email"], input[type="tel"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        select {
+            cursor: pointer;
+        }
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 5px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+        }
+        .generate-btn {
+            background-color: #2980b9;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto;
+            transition: background-color 0.3s;
+        }
+        .generate-btn:hover {
+            background-color: #3498db;
+        }
+        .output {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            display: none;
+        }
+        .copy-btn {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        .copy-btn:hover {
+            background-color: #2ecc71;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .required {
+            color: #e74c3c;
+        }
+        .conditional {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>NATOPS Interim Change Message Generator</h1>
+        
+        <div class="warning">
+            <strong>Note:</strong> This questionnaire will help generate a properly formatted NATOPS Interim Change message. Please fill out all required fields marked with <span class="required">*</span>. Some sections may appear/disappear based on your selections.
+        </div>
+
+        <form id="natopsForm">
+            <!-- Basic Information -->
+            <div class="section">
+                <h3>1. Basic Publication Information</h3>
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="tms">TMS (Type/Model/Series) <span class="required">*</span></label>
+                        <input type="text" id="tms" name="tms" placeholder="e.g., F/A-18E/F" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="icNumber">IC Number <span class="required">*</span></label>
+                        <input type="text" id="icNumber" name="icNumber" placeholder="e.g., IC-1" required>
+                    </div>
+                </div>
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="rocDate">ROC Date <span class="required">*</span></label>
+                        <input type="text" id="rocDate" name="rocDate" placeholder="DD MMM YYYY" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority">Priority Level <span class="required">*</span></label>
+                        <select id="priority" name="priority" required>
+                            <option value="">Select Priority</option>
+                            <option value="PRIORITY">PRIORITY</option>
+                            <option value="URGENT">URGENT</option>
+                            <option value="ROUTINE">ROUTINE</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workflow Type -->
+            <div class="section">
+                <h3>2. Workflow and Distribution</h3>
+                <div class="form-group">
+                    <label for="workflowType">Workflow Type <span class="required">*</span></label>
+                    <select id="workflowType" name="workflowType" required onchange="toggleWorkflowSections()">
+                        <option value="">Select Workflow Type</option>
+                        <option value="standard">Standard Workflow</option>
+                        <option value="efc">eFC Workflow</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="distroType">Distribution Type <span class="required">*</span></label>
+                    <select id="distroType" name="distroType" required onchange="toggleDistroSections()">
+                        <option value="">Select Distribution Type</option>
+                        <option value="standard">Standard Distribution</option>
+                        <option value="distroF">Distribution F (Limited)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="publicationType">Publication Format <span class="required">*</span></label>
+                    <select id="publicationType" name="publicationType" required>
+                        <option value="">Select Format</option>
+                        <option value="electronic">Electronic Only (B.1)</option>
+                        <option value="electronic_then_print">Electronic First, Then Print (B.2)</option>
+                        <option value="print_then_electronic">Print First, Then Electronic (B.3)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- eFC Workflow Fields -->
+            <div id="efcSection" class="section conditional" style="display:none;">
+                <h3>3. eFC Workflow Information</h3>
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="airsNumber">AIRS Number</label>
+                        <input type="text" id="airsNumber" name="airsNumber" placeholder="AIRS########">
+                    </div>
+                    <div class="form-group">
+                        <label for="updatePackage">Update Package Number</label>
+                        <input type="text" id="updatePackage" name="updatePackage" placeholder="UP########">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Publication Details -->
+            <div class="section">
+                <h3>4. Publication Details</h3>
+                <div class="form-group">
+                    <label for="nfmPubNumber">NFM Publication Number <span class="required">*</span></label>
+                    <input type="text" id="nfmPubNumber" name="nfmPubNumber" placeholder="e.g., NAVAIR 01-F18AAD-1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pclPubNumber">PCL Publication Number</label>
+                    <input type="text" id="pclPubNumber" name="pclPubNumber" placeholder="e.g., NAVAIR 01-F18AAD-1CL-1">
+                </div>
+
+                <div class="form-group">
+                    <label for="projectDescription">Brief Project Description <span class="required">*</span></label>
+                    <textarea id="projectDescription" name="projectDescription" placeholder="Describe the changes being made..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="affectedChapters">Affected Chapters/Tabs <span class="required">*</span></label>
+                    <textarea id="affectedChapters" name="affectedChapters" placeholder="List chapters and tabs affected by this change..." required></textarea>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="section">
+                <h3>5. Points of Contact</h3>
+                
+                <div class="form-group">
+                    <label for="pdName">Project Director Name <span class="required">*</span></label>
+                    <input type="text" id="pdName" name="pdName" required>
+                </div>
+                
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="pdPhone">PD Phone Number <span class="required">*</span></label>
+                        <input type="tel" id="pdPhone" name="pdPhone" placeholder="(XXX) XXX-XXXX" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pdEmail">PD Email <span class="required">*</span></label>
+                        <input type="email" id="pdEmail" name="pdEmail" placeholder="name@us.navy.mil" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pmName">NATOPS Program Manager Name</label>
+                    <input type="text" id="pmName" name="pmName">
+                </div>
+                
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="pmCommPhone">PM COMM Phone</label>
+                        <input type="tel" id="pmCommPhone" name="pmCommPhone" placeholder="(XXX) XXX-XXXX">
+                    </div>
+                    <div class="form-group">
+                        <label for="pmDsnPhone">PM DSN Phone</label>
+                        <input type="tel" id="pmDsnPhone" name="pmDsnPhone" placeholder="XXX-XXX-XXXX">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pmEmail">PM Email</label>
+                    <input type="email" id="pmEmail" name="pmEmail" placeholder="name@us.navy.mil">
+                </div>
+
+                <div class="form-group">
+                    <label for="classDeskName">Platform Class Desk Name</label>
+                    <input type="text" id="classDeskName" name="classDeskName">
+                </div>
+                
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="classDeskCommPhone">Class Desk COMM Phone</label>
+                        <input type="tel" id="classDeskCommPhone" name="classDeskCommPhone" placeholder="(XXX) XXX-XXXX">
+                    </div>
+                    <div class="form-group">
+                        <label for="classDeskDsnPhone">Class Desk DSN Phone</label>
+                        <input type="tel" id="classDeskDsnPhone" name="classDeskDsnPhone" placeholder="XXX-XXX-XXXX">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="classDeskEmail">Class Desk Email</label>
+                    <input type="email" id="classDeskEmail" name="classDeskEmail" placeholder="name@us.navy.mil">
+                </div>
+            </div>
+
+            <!-- Special Conditions -->
+            <div class="section">
+                <h3>6. Special Conditions</h3>
+                
+                <div class="form-group">
+                    <label>Special Instructions (check all that apply):</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="mobileAppUrgent" name="specialInstructions" value="mobileAppUrgent">
+                            <label for="mobileAppUrgent">Mobile App Urgent (eFC delayed)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="hasDerivatives" name="specialInstructions" value="hasDerivatives">
+                            <label for="hasDerivatives">Has Associated Derivatives</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tycomReaddress" name="specialInstructions" value="tycomReaddress">
+                            <label for="tycomReaddress">TYCOM Readdress Required</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="classDeskCoord" name="specialInstructions" value="classDeskCoord">
+                            <label for="classDeskCoord">Class Desk Coordination Required</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="ePowerFolder">E-Power Folder Number</label>
+                        <input type="text" id="ePowerFolder" name="ePowerFolder" placeholder="XXXXXX">
+                    </div>
+                    <div class="form-group">
+                        <label for="trackingNumber">Tracking Number</label>
+                        <input type="text" id="trackingNumber" name="trackingNumber" placeholder="XXXXX">
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="generate-btn" onclick="generateMessage()">Generate NATOPS Message</button>
+        </form>
+
+        <div id="output" class="output">
+            <button class="copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
+            <div id="messageOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        function toggleWorkflowSections() {
+            const workflowType = document.getElementById('workflowType').value;
+            const efcSection = document.getElementById('efcSection');
+            
+            if (workflowType === 'efc') {
+                efcSection.style.display = 'block';
+            } else {
+                efcSection.style.display = 'none';
+            }
+        }
+
+        function toggleDistroSections() {
+            // Additional logic for distribution-specific sections if needed
+        }
+
+        function generateMessage() {
+            const formData = new FormData(document.getElementById('natopsForm'));
+            const data = Object.fromEntries(formData.entries());
+            
+            // Validate required fields
+            const requiredFields = ['tms', 'icNumber', 'rocDate', 'priority', 'workflowType', 'distroType', 'publicationType', 'nfmPubNumber', 'projectDescription', 'affectedChapters', 'pdName', 'pdPhone', 'pdEmail'];
+            
+            for (let field of requiredFields) {
+                if (!data[field] || data[field].trim() === '') {
+                    alert(`Please fill in the required field: ${field}`);
+                    return;
+                }
+            }
+
+            // Get special instructions checkboxes
+            const specialInstructions = Array.from(document.querySelectorAll('input[name="specialInstructions"]:checked')).map(el => el.value);
+            
+            const message = buildMessage(data, specialInstructions);
+            
+            document.getElementById('messageOutput').textContent = message;
+            document.getElementById('output').style.display = 'block';
+            document.getElementById('output').scrollIntoView();
+        }
+
+        function buildMessage(data, specialInstructions) {
+            const currentDate = new Date();
+            const dtg = formatDTG(currentDate);
+            
+            let message = `P ${dtg}
+
+FM COMNAVAIRSYSCOM PATUXENT RIVER MD//ACO//
+
+TO Model Manager Unit//
+
+(Additional PLADS as appropriate)
+
+INFO COMNAVAIRSYSCOM PATUXENT RIVER MD//ACO//
+
+COMNAVSAFECOM NORFOLK VA
+
+NATEC SAN DIEGO CA//
+
+BT
+
+UNCLAS CUI
+
+MSGID/GENADMIN/MIL-STD-6040(SERIES)/B.1.01.15/COMNAVAIRSYSCOM
+
+PATUXENT RIVER/ACO/${currentDate.toISOString().substr(5,2).toUpperCase()}${currentDate.toISOString().substr(8,2)}/-/-/USA/UNCLASSIFIED//
+
+SUBJ/${data.tms} NATOPS PUBLICATION(S)(**${data.priority}**)**INTERIM CHANGE**) ${data.icNumber} DTD ${data.rocDate} RELEASE ANNOUNCEMENT//
+
+REF/A/TYPE:EML/COG UNIT/-/DDMMMYYYY//
+
+${data.workflowType === 'efc' ? `REF/A/TYPE:DOC/ AIRS${data.airsNumber || '########'}/-/DD MMM YYYY//` : ''}
+
+REF/B/TYPE:DOC/COMNAVAIRSYSCOM/-/DDMMMYYYY//
+
+${data.workflowType === 'efc' ? `REF/B/TYPE:DOC/ UPDATE PACKAGE${data.updatePackage || '####'}/-/DDMMMYYYY//` : ''}
+
+REF/C/TYPE:DOC/${data.nfmPubNumber}/COMNAVAIRSYSCOM/-/DDMMMYYYY//
+
+REF/D/TYPE:DOC/${data.nfmPubNumber}/COMNAVAIRSYSCOM/-/DDMMMYYYY//
+
+REF/E/TYPE:DOC/CNAF M-3710.7/-/DDMMMYYYY//
+
+NARR/REF A IS COG COMMAND CONCURRENCE.
+
+${data.workflowType === 'efc' ? `NARR/REF A IS PRIORITY AIRS${data.airsNumber || '########'}.` : ''}
+
+REF B IS AIRS NATOPS--XXXX-XXX.
+
+${data.workflowType === 'efc' ? `NARR/REF B IS UPDATE PACKAGE UP${data.updatePackage || '########'}.` : ''}
+
+REF C IS UPDATED PAGES FOR THE ${data.tms} NATOPS FLIGHT MANUAL PUBLICATION SET.
+
+REF D IS CURRENT ${data.tms} NATOPS FLIGHT MANUAL PUBLICATION SET.
+
+REF E IS NATOPS GENERAL FLIGHT AND OPERATING INSTRUCTIONS MANUAL.//
+
+POC/${data.pdName}/${data.tms} PD/UNIT: ACO/
+
+/NAME: PATUXENT RIVER MD/TEL: ${data.pdPhone}/EMAIL: ${data.pdEmail}//
+
+GENTEXT/REMARKS/1. IRT REFS A AND B, THIS MESSAGE PROVIDES RELEASE
+
+NOTIFICATION OF NAVAIR REF C NATOPS INTERIM CHANGE(S) DTD (${data.rocDate}). THIS NATOPS RELEASE PROVIDES PERMANENT FLIGHT CLEARANCE INFORMATION CRITICAL TO AIRCREW PERSONNEL. THE REF C ${specialInstructions.includes('hasDerivatives') ? '**WITH ASSOCIATED DERIVATIVE**' : ''} PAGES ARE PROVIDED FOR INCORPORATION INTO REF D PUBLICATION SET AS APPLICABLE AND IS RELEASED UNDER THE AUTHORITY OF REF E.
+
+2. SUMMARY. IRT REFS A AND B, THIS NATOPS INTERIM
+
+CHANGE INCLUDES THE FOLLOWING PUBLICATIONS AND INCORPORATES
+
+${data.projectDescription}. THIS INTERIM CHANGE
+
+AFFECTS THE FOLLOWING CHAPTERS/TABS:
+
+${data.affectedChapters}
+
+C. SEE THE LEPC (LIST OF EFFECTIVE PRINTED CONTENT) PAGE IN
+
+THE UPDATED PUBLICATIONS FOR A COMPLETE LIST OF THE PAGES
+
+OR TABS AFFECTED BY THIS INTERIM CHANGE DATED ${data.rocDate}.
+
+3. REQUEST MODEL MANAGER COORDINATE WITH NATEC AND ALL AFFECTED
+
+USERS FOR THE **PRINT AND DISTRIBUTION** (IF APPLICABLE) OF THE
+
+REVISED/UPDATED NATOPS PUBLICATIONS.
+
+REQUEST MODEL MANAGER COORDINATE WITH NATEC AND ACO THE
+
+REVISED/UPDATED NATOPS **POSTING DATE** ALIGNED WITH THE USE DATE
+
+AGREED UPON BY MODEL MANAGER, ${specialInstructions.includes('classDeskCoord') ? 'CLASS DESK, ' : ''}AND ACO.
+
+REVISED/UPDATED NATOPS PUBLICATIONS WILL
+
+BECOME AVAILABLE ON THE AIRWORTHINESS WEBSITE
+
+(HTTPS:(SLASH)(SLASH)AIRWORTHINESS.NAVAIR.NAVY.MIL)
+
+AFTER THEY HAVE BEEN POSTED TO THE NATEC WEBSITE
+
+(HTTPS:(SLASH)(SLASH)MYNATEC.NAVAIR.NAVY.MIL).
+
+SUPERSEDED PUBLICATIONS WILL BE ARCHIVED UPON POSTING OF
+
+REVISED/UPDATED PUBLICATIONS TO BOTH WEBSITES.
+
+${data.distroType === 'distroF' ? `**[(Distro F):]{.underline}** REQUEST MODEL MANAGER COORDINATE WITH ACO ${specialInstructions.includes('classDeskCoord') ? 'AND CLASS DESK ' : ''}FOR THE PRINT AND DISTRIBUTION (IF APPLICABLE), AND
+
+COORDINATE THE USE DATE OF REVISED/UPDATED NATOPS PUBLICATIONS
+
+WITH NATEC AND ALL AFFECTED USERS. REVISED/UPDATED NATOPS
+
+PUBLICATIONS WILL BECOME AVAILABLE FROM THE NATOPS PROGRAM
+
+MANAGER IN PARA 4.A.` : ''}
+
+${specialInstructions.includes('mobileAppUrgent') ? `**[(Mobile APP Urgent If eFC File is Delayed and is Required by PM to be sent with FPS):]{.underline}**
+ADDITIONALLY, AIRCREW ARE DIRECTED TO ANNOTATE THE MOBILE
+APPLICATION. THIS TASK CAN BE ACHIEVED USING THE
+HIGHLIGHTING AND NOTE FUNCTIONS WITHIN THE MOBILE APPLICATION.
+ANNOTATE AFFECTED CONTENT BY HIGHLIGHTING DELETED OR AFFECTED
+TEXT, AND ADDING A COMMENT CONTAINING NEW OR CHANGED TEXT NEXT
+TO THE HIGHLIGHTING, THE RECORD OF CHANGE CONTENT, AND THE
+PUBLICATION DATE WILL ALSO NEED ANNOTATING.` : ''}
+
+4. POINTS OF CONTACT:
+
+A. ${data.pmName || 'RANK/NAME'}, ${data.tms} NATOPS PROGRAM MANAGER,
+
+TEL: COMM: ${data.pmCommPhone || '(XXX) XXX-XXXX'}, DSN: ${data.pmDsnPhone || 'XXX-XXX-XXXX'},
+
+EMAIL: ${data.pmEmail || 'XXXXXXXXXXXXXXXXXX@US.NAVY.MIL'}.
+
+B. ${data.classDeskName || 'RANK/NAME'}, ${data.tms} PLATFORM CLASS DESK,
+
+TEL: COMM: ${data.classDeskCommPhone || '(XXX) XXX-XXXX'}, DSN: ${data.classDeskDsnPhone || 'XXX-XXX-XXXX'},
+
+EMAIL: ${data.classDeskEmail || 'XXXXXXXXXXXXXXXXXX@US.NAVY.MIL'}.
+
+C. GREG HIRSEKORN, ACO CHANGE COORDINATOR,
+
+TEL: COMM: (585) 591-0088,
+
+EMAIL: GREGORY.S.HIRSEKORN.CTR@US.NAVY.MIL.
+
+D. LCDR ELIZABETH JANCA, ACO NATOPS OFFICER,
+
+TEL: COMM (301) 757-4818, DSN 757-4818,
+
+EMAIL: ELIZABETH.L.JANCA.MIL@US.NAVY.MIL.
+
+E. ADAM BRADLEY, ACO PFC MANAGER,
+
+TEL: COMM (240) 587-2928,
+
+EMAIL: ADAM.S.BRADLEY2.CIV@US.NAVY.MIL.
+
+F. AIRWORTHINESS GLOBAL CUSTOMER SUPPORT TEAM (GCST),
+
+TEL: COMM (301) 757-0187,
+
+EMAIL: USN.PATUXENT.NAWCAD.MBX.AIRWORTHINESS@US.NAVY.MIL.
+
+G. DENNIS BOBBITT, NATEC LEM,
+
+TEL: COMM: (619) 545-2425,
+
+EMAIL: DENNIS.J.BOBBITT.CIV@US.NAVY.MIL.
+
+5. OTHER REMARKS:
+
+A. THIS INTERIM CHANGE IS ISSUED TO ALLOW LOCAL
+
+PRINTING OF ONLY THOSE PAGES NEEDED TO PROVIDE REQUISITE
+
+CONTENT. IN AN INTERIM CHANGE, THE RECORD OF CHANGE (ROC)
+
+AND LIST OF EFFECTIVE PRINTED CONTENT (LEPC) PAGES ARE USED
+
+TO IDENTIFY THE UPDATED PAGES/CONTENT (I.E., CONTENT WITH
+
+CHANGE BARS AND UPDATED PAGE DATES). EACH TIME AN INTERIM
+
+CHANGE TO THE NATOPS IS RELEASED, THE UPDATED NATOPS (WITH
+
+AFFECTED PAGES INCORPORATED) AND THE PRINT DATA PACKAGE (PDF
+
+OF UPDATED PAGES) WILL BE POSTED TO THE NATEC AND
+
+AIRWORTHINESS WEBSITES, UNLESS THIS IS A DISTRO F
+
+PUBLICATION.
+
+${getPublicationTypeText(data.publicationType)}
+
+C. SINCE ONLY AFFECTED PAGES ARE PROVIDED,
+
+ASSOCIATED TABLE OF CONTENTS, PAGE NUMBERING, PARAGRAPH,
+
+FIGURE, AND TABLE REFERENCES MAY NOT ALIGN AS THE RESULT OF
+
+THE UPDATE.
+
+D. PDF FILES CONTAINING PAGES (PRINT DATA PACKAGE)
+
+REQUIRED TO UPDATE PRINTED COPIES OF SUPERSEDED PUBLICATIONS
+
+WILL BE POSTED ON THE AIRWORTHINESS WEBSITE
+
+(HTTPS: (SLASH)(SLASH)AIRWORTHINESS.NAVAIR.NAVY.MIL). THESE
+
+FILES MAY BE DOWNLOADED AND PRINTED LOCALLY AND CAN BE FOUND
+
+UNDER LIBRARY/SEARCH NATIP/NATOPS
+
+PUBLICATIONS/PLATFORM/SPECIFIC T/M/S, PUBLICATION NUMBER.
+
+E. THE PRINT DATA PACKAGE (PDP) WILL ALSO BE POSTED AT THE NATEC
+
+WEBSITE (HTTPS:(SLASH)(SLASH)MYNATEC.NAVAIR.NAVY.MIL) IN THE
+
+IC LISTINGS OF THAT SITES NATOPS LIBRARY.
+
+F. **[(Mobile App):]{.underline}** TO OBTAIN A COPY OF THE MOBILE
+
+APPLICATION (MA) CONTENT FILES FOR THE UPDATED NFM AND PCL,
+
+DOWNLOAD EITHER A SINGLE LARGER EFC FILE WITH THE COMPLETE
+
+PUBLICATIONS OR A SMALLER EFCU FILE THAT CONTAINS ONLY THE
+
+CHANGED CONTENT TO UPDATE THE USER'S EXISTING MA PUBLICATIONS
+
+ON THE ELECTRONIC KNEEBOARD. THE FILES WILL BE POSTED ON THE
+
+AIRWORTHINESS WEBSITE
+
+(HTTPS:(SLASH)(SLASH)AIRWORTHINESS.NAVAIR.NAVY.MIL). ONCE AT
+
+THE AIRWORTHINESS WEBSITE, GO TO THE LIBRARY TAB AT THE TOP
+
+TO SEARCH FOR THE NATOPS PUBLICATION AND SELECT THE
+
+PUBLICATION NUMBER TO GET TO THE NATOPS PUBLICATION DETAIL
+
+PAGE. AT THE BOTTOM OF THE PAGE IS THE EFC SECTION THAT HAS
+
+THE FILES FOR DOWNLOAD BY EITHER SELECTING THE HYPERLINK
+
+WITHIN THE EFC TITLE OR BY SELECTING THE DOWN ARROW UNDER
+
+ACTIONS.
+
+G. NATOPS CHANGE RECOMMENDATIONS (IN ACCORDANCE WITH REF **E**) MAY
+
+BE SUBMITTED THROUGH THE AIRWORTHINESS WEBSITE VIA THE
+
+AIRWORTHINESS ISSUE RESOLUTION SYSTEM (AIRS). ONCE AT
+
+WEBSITE HOME PAGE, SELECT SUBMIT REQUESTS/AIRS.
+
+${data.workflowType === 'efc' ? `H. IF THE PLATFORM IS UPDATED VIA EFC WORKFLOW, THEN CHANGE
+
+RECOMMENDATIONS ARE SUBMITTED AT
+
+(HTTPS:(SLASH)(SLASH)EFC.NAVAIR.NAVY.MIL).` : ''}
+
+I. INFORMATION REGARDING THE AIRWORTHINESS PROCESS, INCLUDING A
+
+LISTING OF ALL CURRENT INTERIM FLIGHT CLEARANCES, AND
+
+NATOPS/NATIP PRODUCTS, CAN BE FOUND ON THE AIRWORTHINESS
+
+WEBSITE.
+
+J. THE MODEL MANAGER UNIT (SEE PARA 4.A ABOVE) IS TO READDRESS
+
+THIS MESSAGE AS REQUIRED TO ENSURE ALL AFFECTED SQUADRONS,
+
+UNITS AND ACTIVITIES ARE NOTIFIED OF THIS NATOPS IC.
+
+${specialInstructions.includes('tycomReaddress') ? `K. REQUEST TYPE COMMANDERS READDRESS THIS MESSAGE TO
+
+APPROPRIATE SUBORDINATE COMMANDS UNDER THEIR COGNIZANCE.` : ''}
+
+L. E-POWER FOLDER ${data.ePowerFolder || 'XXXXXX'}; TRACKING NUMBER ${data.trackingNumber || 'XXXXX'}//`;
+
+            return message;
+        }
+
+        function getPublicationTypeText(type) {
+            switch(type) {
+                case 'electronic':
+                    return 'B.1. THIS WILL BE POSTED IN AN ELECTRONIC FORMAT ONLY.';
+                case 'electronic_then_print':
+                    return `B.2. THIS WILL BE POSTED PROMPTLY IN ELECTRONIC FORMAT FOR FLEET
+
+USE AND WILL SUBSEQUENTLY BE
+
+PRINTED AND DISTRIBUTED TO THE FLEET BY NATEC. PRINT AND
+
+DISTRIBUTION TYPICALLY REQUIRES 8-10 WEEKS.`;
+                case 'print_then_electronic':
+                    return `B.3. THIS WILL BE POSTED IN ELECTRONIC FORMAT SUBSEQUENT TO
+
+PRINT AND FLEET DISTRIBUTION BY NATEC. PRINT AND
+
+DISTRIBUTION TYPICALLY REQUIRES 8-10 WEEKS.`;
+                default:
+                    return 'B.1. THIS WILL BE POSTED IN AN ELECTRONIC FORMAT ONLY.';
+            }
+        }
+
+        function formatDTG(date) {
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            const hour = String(date.getUTCHours()).padStart(2, '0');
+            const minute = String(date.getUTCMinutes()).padStart(2, '0');
+            const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+            const month = monthNames[date.getUTCMonth()];
+            const year = String(date.getUTCFullYear()).substr(2);
+            
+            return `${day}${hour}${minute}Z ${month} ${year}`;
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('messageOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Message copied to clipboard!');
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
