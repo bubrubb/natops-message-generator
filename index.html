@@ -189,7 +189,7 @@
                     <label for="workflowType">Workflow Type <span class="required">*</span></label>
                     <select id="workflowType" name="workflowType" required onchange="toggleWorkflowSections()">
                         <option value="">Select Workflow Type</option>
-                        <option value="standard">Standard Workflow</option>
+                        <option value="standard">Legacy Workflow</option>
                         <option value="efc">eFC Workflow</option>
                     </select>
                 </div>
@@ -243,6 +243,21 @@
                 </div>
 
                 <div class="form-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="additionalPubs" name="additionalPubs" onchange="toggleAdditionalPubs()">
+                        <label for="additionalPubs">Add Additional Publication Numbers (up to 10 total)</label>
+                    </div>
+                </div>
+
+                <div id="additionalPubsSection" class="conditional" style="display:none;">
+                    <div id="additionalPubsContainer">
+                        <!-- Additional pub fields will be generated here -->
+                    </div>
+                    <button type="button" class="copy-btn" onclick="addPubField()" style="background-color: #3498db; margin-top: 10px;">Add Publication</button>
+                    <button type="button" class="copy-btn" onclick="removePubField()" style="background-color: #e74c3c; margin-top: 10px; margin-left: 10px;">Remove Last</button>
+                </div>
+
+                <div class="form-group">
                     <label for="projectDescription">Brief Project Description <span class="required">*</span></label>
                     <textarea id="projectDescription" name="projectDescription" placeholder="Describe the changes being made..." required></textarea>
                 </div>
@@ -258,7 +273,7 @@
                 <h3>5. Points of Contact</h3>
                 
                 <div class="form-group">
-                    <label for="pdName">Project Director Name <span class="required">*</span></label>
+                    <label for="pdName">Product Developer Name <span class="required">*</span></label>
                     <input type="text" id="pdName" name="pdName" required>
                 </div>
                 
@@ -328,6 +343,10 @@
                             <label for="mobileAppUrgent">Mobile App Urgent (eFC delayed)</label>
                         </div>
                         <div class="checkbox-item">
+                            <input type="checkbox" id="includeMobileApp" name="specialInstructions" value="includeMobileApp" checked>
+                            <label for="includeMobileApp">Include Mobile App Instructions</label>
+                        </div>
+                        <div class="checkbox-item">
                             <input type="checkbox" id="hasDerivatives" name="specialInstructions" value="hasDerivatives">
                             <label for="hasDerivatives">Has Associated Derivatives</label>
                         </div>
@@ -364,6 +383,57 @@
     </div>
 
     <script>
+        let additionalPubCount = 0;
+        const maxAdditionalPubs = 9; // 9 additional + 1 original = 10 total
+
+        function toggleAdditionalPubs() {
+            const checkbox = document.getElementById('additionalPubs');
+            const section = document.getElementById('additionalPubsSection');
+            
+            if (checkbox.checked) {
+                section.style.display = 'block';
+                if (additionalPubCount === 0) {
+                    addPubField(); // Add first field automatically
+                }
+            } else {
+                section.style.display = 'none';
+                // Clear all additional fields
+                document.getElementById('additionalPubsContainer').innerHTML = '';
+                additionalPubCount = 0;
+            }
+        }
+
+        function addPubField() {
+            if (additionalPubCount >= maxAdditionalPubs) {
+                alert(`Maximum of ${maxAdditionalPubs + 1} total publications allowed.`);
+                return;
+            }
+            
+            additionalPubCount++;
+            const container = document.getElementById('additionalPubsContainer');
+            
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'form-group';
+            fieldDiv.id = `additionalPub${additionalPubCount}`;
+            
+            fieldDiv.innerHTML = `
+                <label for="additionalPubNumber${additionalPubCount}">Additional Publication #${additionalPubCount}</label>
+                <input type="text" id="additionalPubNumber${additionalPubCount}" name="additionalPubNumber${additionalPubCount}" placeholder="e.g., NAVAIR 01-F18AAD-2CL-1">
+            `;
+            
+            container.appendChild(fieldDiv);
+        }
+
+        function removePubField() {
+            if (additionalPubCount > 0) {
+                const fieldToRemove = document.getElementById(`additionalPub${additionalPubCount}`);
+                if (fieldToRemove) {
+                    fieldToRemove.remove();
+                    additionalPubCount--;
+                }
+            }
+        }
+
         function toggleWorkflowSections() {
             const workflowType = document.getElementById('workflowType').value;
             const efcSection = document.getElementById('efcSection');
@@ -382,6 +452,16 @@
         function generateMessage() {
             const formData = new FormData(document.getElementById('natopsForm'));
             const data = Object.fromEntries(formData.entries());
+            
+            // Collect additional publication numbers
+            const additionalPubs = [];
+            for (let i = 1; i <= additionalPubCount; i++) {
+                const pubField = document.getElementById(`additionalPubNumber${i}`);
+                if (pubField && pubField.value.trim()) {
+                    additionalPubs.push(pubField.value.trim());
+                }
+            }
+            data.additionalPubs = additionalPubs;
             
             // Validate required fields
             const requiredFields = ['tms', 'icNumber', 'rocDate', 'priority', 'workflowType', 'distroType', 'publicationType', 'nfmPubNumber', 'projectDescription', 'affectedChapters', 'pdName', 'pdPhone', 'pdEmail'];
@@ -460,53 +540,29 @@ REF D IS CURRENT ${data.tms} NATOPS FLIGHT MANUAL PUBLICATION SET.
 REF E IS NATOPS GENERAL FLIGHT AND OPERATING INSTRUCTIONS MANUAL.//
 
 POC/${data.pdName}/${data.tms} PD/UNIT: ACO/
-
 /NAME: PATUXENT RIVER MD/TEL: ${data.pdPhone}/EMAIL: ${data.pdEmail}//
-
 GENTEXT/REMARKS/1. IRT REFS A AND B, THIS MESSAGE PROVIDES RELEASE
-
 NOTIFICATION OF NAVAIR REF C NATOPS INTERIM CHANGE(S) DTD (${data.rocDate}). THIS NATOPS RELEASE PROVIDES PERMANENT FLIGHT CLEARANCE INFORMATION CRITICAL TO AIRCREW PERSONNEL. THE REF C ${specialInstructions.includes('hasDerivatives') ? '**WITH ASSOCIATED DERIVATIVE**' : ''} PAGES ARE PROVIDED FOR INCORPORATION INTO REF D PUBLICATION SET AS APPLICABLE AND IS RELEASED UNDER THE AUTHORITY OF REF E.
-
 2. SUMMARY. IRT REFS A AND B, THIS NATOPS INTERIM
-
 CHANGE INCLUDES THE FOLLOWING PUBLICATIONS AND INCORPORATES
-
 ${data.projectDescription}. THIS INTERIM CHANGE
-
 AFFECTS THE FOLLOWING CHAPTERS/TABS:
-
 ${data.affectedChapters}
-
 C. SEE THE LEPC (LIST OF EFFECTIVE PRINTED CONTENT) PAGE IN
-
 THE UPDATED PUBLICATIONS FOR A COMPLETE LIST OF THE PAGES
-
 OR TABS AFFECTED BY THIS INTERIM CHANGE DATED ${data.rocDate}.
-
 3. REQUEST MODEL MANAGER COORDINATE WITH NATEC AND ALL AFFECTED
-
 USERS FOR THE **PRINT AND DISTRIBUTION** (IF APPLICABLE) OF THE
-
 REVISED/UPDATED NATOPS PUBLICATIONS.
-
 REQUEST MODEL MANAGER COORDINATE WITH NATEC AND ACO THE
-
 REVISED/UPDATED NATOPS **POSTING DATE** ALIGNED WITH THE USE DATE
-
 AGREED UPON BY MODEL MANAGER, ${specialInstructions.includes('classDeskCoord') ? 'CLASS DESK, ' : ''}AND ACO.
-
 REVISED/UPDATED NATOPS PUBLICATIONS WILL
-
 BECOME AVAILABLE ON THE AIRWORTHINESS WEBSITE
-
 (HTTPS:(SLASH)(SLASH)AIRWORTHINESS.NAVAIR.NAVY.MIL)
-
 AFTER THEY HAVE BEEN POSTED TO THE NATEC WEBSITE
-
 (HTTPS:(SLASH)(SLASH)MYNATEC.NAVAIR.NAVY.MIL).
-
 SUPERSEDED PUBLICATIONS WILL BE ARCHIVED UPON POSTING OF
-
 REVISED/UPDATED PUBLICATIONS TO BOTH WEBSITES.
 
 ${data.distroType === 'distroF' ? `**[(Distro F):]{.underline}** REQUEST MODEL MANAGER COORDINATE WITH ACO ${specialInstructions.includes('classDeskCoord') ? 'AND CLASS DESK ' : ''}FOR THE PRINT AND DISTRIBUTION (IF APPLICABLE), AND
@@ -519,7 +575,7 @@ PUBLICATIONS WILL BECOME AVAILABLE FROM THE NATOPS PROGRAM
 
 MANAGER IN PARA 4.A.` : ''}
 
-${specialInstructions.includes('mobileAppUrgent') ? `**[(Mobile APP Urgent If eFC File is Delayed and is Required by PM to be sent with FPS):]{.underline}**
+            ${specialInstructions.includes('mobileAppUrgent') ? `**[(Mobile APP Urgent If eFC File is Delayed and is Required by PM to be sent with FPS):]{.underline}**
 ADDITIONALLY, AIRCREW ARE DIRECTED TO ANNOTATE THE MOBILE
 APPLICATION. THIS TASK CAN BE ACHIEVED USING THE
 HIGHLIGHTING AND NOTE FUNCTIONS WITHIN THE MOBILE APPLICATION.
@@ -626,69 +682,38 @@ WEBSITE (HTTPS:(SLASH)(SLASH)MYNATEC.NAVAIR.NAVY.MIL) IN THE
 
 IC LISTINGS OF THAT SITES NATOPS LIBRARY.
 
-F. **[(Mobile App):]{.underline}** TO OBTAIN A COPY OF THE MOBILE
-
+${specialInstructions.includes('includeMobileApp') ? `F. **[(Mobile App):]{.underline}** TO OBTAIN A COPY OF THE MOBILE
 APPLICATION (MA) CONTENT FILES FOR THE UPDATED NFM AND PCL,
-
 DOWNLOAD EITHER A SINGLE LARGER EFC FILE WITH THE COMPLETE
-
 PUBLICATIONS OR A SMALLER EFCU FILE THAT CONTAINS ONLY THE
-
 CHANGED CONTENT TO UPDATE THE USER'S EXISTING MA PUBLICATIONS
-
 ON THE ELECTRONIC KNEEBOARD. THE FILES WILL BE POSTED ON THE
-
 AIRWORTHINESS WEBSITE
-
 (HTTPS:(SLASH)(SLASH)AIRWORTHINESS.NAVAIR.NAVY.MIL). ONCE AT
-
 THE AIRWORTHINESS WEBSITE, GO TO THE LIBRARY TAB AT THE TOP
-
 TO SEARCH FOR THE NATOPS PUBLICATION AND SELECT THE
-
 PUBLICATION NUMBER TO GET TO THE NATOPS PUBLICATION DETAIL
-
 PAGE. AT THE BOTTOM OF THE PAGE IS THE EFC SECTION THAT HAS
-
 THE FILES FOR DOWNLOAD BY EITHER SELECTING THE HYPERLINK
-
 WITHIN THE EFC TITLE OR BY SELECTING THE DOWN ARROW UNDER
-
 ACTIONS.
-
-G. NATOPS CHANGE RECOMMENDATIONS (IN ACCORDANCE WITH REF **E**) MAY
-
+G.` : 'F.'} NATOPS CHANGE RECOMMENDATIONS (IN ACCORDANCE WITH REF **E**) MAY
 BE SUBMITTED THROUGH THE AIRWORTHINESS WEBSITE VIA THE
-
 AIRWORTHINESS ISSUE RESOLUTION SYSTEM (AIRS). ONCE AT
-
 WEBSITE HOME PAGE, SELECT SUBMIT REQUESTS/AIRS.
-
-${data.workflowType === 'efc' ? `H. IF THE PLATFORM IS UPDATED VIA EFC WORKFLOW, THEN CHANGE
-
+${data.workflowType === 'efc' ? `${specialInstructions.includes('includeMobileApp') ? 'H' : 'G'}. IF THE PLATFORM IS UPDATED VIA EFC WORKFLOW, THEN CHANGE
 RECOMMENDATIONS ARE SUBMITTED AT
-
 (HTTPS:(SLASH)(SLASH)EFC.NAVAIR.NAVY.MIL).` : ''}
-
-I. INFORMATION REGARDING THE AIRWORTHINESS PROCESS, INCLUDING A
-
+${specialInstructions.includes('includeMobileApp') ? 'I' : data.workflowType === 'efc' ? 'H' : 'G'}. INFORMATION REGARDING THE AIRWORTHINESS PROCESS, INCLUDING A
 LISTING OF ALL CURRENT INTERIM FLIGHT CLEARANCES, AND
-
 NATOPS/NATIP PRODUCTS, CAN BE FOUND ON THE AIRWORTHINESS
-
 WEBSITE.
-
-J. THE MODEL MANAGER UNIT (SEE PARA 4.A ABOVE) IS TO READDRESS
-
+${specialInstructions.includes('includeMobileApp') ? 'J' : data.workflowType === 'efc' ? 'I' : 'H'}. THE MODEL MANAGER UNIT (SEE PARA 4.A ABOVE) IS TO READDRESS
 THIS MESSAGE AS REQUIRED TO ENSURE ALL AFFECTED SQUADRONS,
-
 UNITS AND ACTIVITIES ARE NOTIFIED OF THIS NATOPS IC.
-
-${specialInstructions.includes('tycomReaddress') ? `K. REQUEST TYPE COMMANDERS READDRESS THIS MESSAGE TO
-
+${specialInstructions.includes('tycomReaddress') ? `${specialInstructions.includes('includeMobileApp') ? 'K' : data.workflowType === 'efc' ? 'J' : 'I'}. REQUEST TYPE COMMANDERS READDRESS THIS MESSAGE TO
 APPROPRIATE SUBORDINATE COMMANDS UNDER THEIR COGNIZANCE.` : ''}
-
-L. E-POWER FOLDER ${data.ePowerFolder || 'XXXXXX'}; TRACKING NUMBER ${data.trackingNumber || 'XXXXX'}//`;
+${specialInstructions.includes('includeMobileApp') ? 'L' : specialInstructions.includes('tycomReaddress') ? (data.workflowType === 'efc' ? 'K' : 'J') : (data.workflowType === 'efc' ? 'J' : 'I')}. E-POWER FOLDER ${data.ePowerFolder || 'XXXXXX'}; TRACKING NUMBER ${data.trackingNumber || 'XXXXX'}//`;
 
             return message;
         }
@@ -699,17 +724,12 @@ L. E-POWER FOLDER ${data.ePowerFolder || 'XXXXXX'}; TRACKING NUMBER ${data.track
                     return 'B.1. THIS WILL BE POSTED IN AN ELECTRONIC FORMAT ONLY.';
                 case 'electronic_then_print':
                     return `B.2. THIS WILL BE POSTED PROMPTLY IN ELECTRONIC FORMAT FOR FLEET
-
 USE AND WILL SUBSEQUENTLY BE
-
 PRINTED AND DISTRIBUTED TO THE FLEET BY NATEC. PRINT AND
-
 DISTRIBUTION TYPICALLY REQUIRES 8-10 WEEKS.`;
                 case 'print_then_electronic':
                     return `B.3. THIS WILL BE POSTED IN ELECTRONIC FORMAT SUBSEQUENT TO
-
 PRINT AND FLEET DISTRIBUTION BY NATEC. PRINT AND
-
 DISTRIBUTION TYPICALLY REQUIRES 8-10 WEEKS.`;
                 default:
                     return 'B.1. THIS WILL BE POSTED IN AN ELECTRONIC FORMAT ONLY.';
